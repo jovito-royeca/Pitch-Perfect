@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
@@ -100,29 +101,20 @@
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lfg-fE-STC">
                                 <rect key="frame" x="-23" y="-15" width="46" height="30"/>
                                 <state key="normal" image="slowButton"/>
-                                <variation key="widthClass=compact" misplaced="YES">
-                                    <rect key="frame" x="64" y="121" width="100" height="100"/>
-                                </variation>
                                 <connections>
-                                    <action selector="playSlow:" destination="IH9-p0-1bC" eventType="touchUpInside" id="Hte-BD-z8y"/>
+                                    <action selector="playSlowAudio:" destination="IH9-p0-1bC" eventType="touchUpInside" id="kWX-Bp-xQk"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Q6B-I9-xpZ">
                                 <rect key="frame" x="-23" y="-15" width="46" height="30"/>
                                 <state key="normal" image="fastButton"/>
-                                <variation key="widthClass=compact" misplaced="YES">
-                                    <rect key="frame" x="255" y="121" width="100" height="100"/>
-                                </variation>
                                 <connections>
-                                    <action selector="playFast:" destination="IH9-p0-1bC" eventType="touchUpInside" id="fnA-Qj-NOF"/>
+                                    <action selector="playFastAudio:" destination="IH9-p0-1bC" eventType="touchUpInside" id="jk1-DT-4i9"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hZd-2L-OXA">
                                 <rect key="frame" x="-23" y="-15" width="46" height="30"/>
                                 <state key="normal" image="stopButton"/>
-                                <variation key="widthClass=compact" misplaced="YES">
-                                    <rect key="frame" x="175" y="514" width="50" height="50"/>
-                                </variation>
                                 <connections>
                                     <action selector="playStop:" destination="IH9-p0-1bC" eventType="touchUpInside" id="5L7-PS-v1w"/>
                                 </connections>
@@ -130,9 +122,6 @@
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WDZ-j3-O30">
                                 <rect key="frame" x="-23" y="-15" width="46" height="30"/>
                                 <state key="normal" image="chipmunkButton"/>
-                                <variation key="widthClass=compact" misplaced="YES">
-                                    <rect key="frame" x="50" y="313" width="100" height="100"/>
-                                </variation>
                                 <connections>
                                     <action selector="playChipmunk:" destination="IH9-p0-1bC" eventType="touchUpInside" id="Wl8-Sf-hyW"/>
                                 </connections>
@@ -140,9 +129,6 @@
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7In-01-k4L">
                                 <rect key="frame" x="-23" y="-15" width="46" height="30"/>
                                 <state key="normal" image="darthvaderButton"/>
-                                <variation key="widthClass=compact" misplaced="YES">
-                                    <rect key="frame" x="255" y="313" width="100" height="100"/>
-                                </variation>
                                 <connections>
                                     <action selector="playDarthVader:" destination="IH9-p0-1bC" eventType="touchUpInside" id="e1S-tZ-54g"/>
                                 </connections>
@@ -170,16 +156,16 @@
                                 <exclude reference="7In-01-k4L"/>
                             </mask>
                             <mask key="constraints">
-                                <exclude reference="Jjk-Pq-nVy"/>
-                                <exclude reference="zb6-p1-rOR"/>
+                                <exclude reference="TvU-tn-blm"/>
+                                <exclude reference="jkV-nC-i9a"/>
+                                <exclude reference="xQB-wZ-Bps"/>
                                 <exclude reference="d3D-ki-oOJ"/>
                                 <exclude reference="i8F-UC-zCP"/>
                                 <exclude reference="EUJ-OG-HM0"/>
                                 <exclude reference="GQJ-6l-W2Q"/>
-                                <exclude reference="jkV-nC-i9a"/>
-                                <exclude reference="xQB-wZ-Bps"/>
                                 <exclude reference="SmP-5l-aiN"/>
-                                <exclude reference="TvU-tn-blm"/>
+                                <exclude reference="Jjk-Pq-nVy"/>
+                                <exclude reference="zb6-p1-rOR"/>
                             </mask>
                         </variation>
                         <variation key="widthClass=compact">
@@ -191,16 +177,16 @@
                                 <include reference="7In-01-k4L"/>
                             </mask>
                             <mask key="constraints">
-                                <include reference="Jjk-Pq-nVy"/>
-                                <include reference="zb6-p1-rOR"/>
+                                <include reference="TvU-tn-blm"/>
+                                <include reference="jkV-nC-i9a"/>
+                                <include reference="xQB-wZ-Bps"/>
                                 <include reference="d3D-ki-oOJ"/>
                                 <include reference="i8F-UC-zCP"/>
                                 <include reference="EUJ-OG-HM0"/>
                                 <include reference="GQJ-6l-W2Q"/>
-                                <include reference="jkV-nC-i9a"/>
-                                <include reference="xQB-wZ-Bps"/>
                                 <include reference="SmP-5l-aiN"/>
-                                <include reference="TvU-tn-blm"/>
+                                <include reference="Jjk-Pq-nVy"/>
+                                <include reference="zb6-p1-rOR"/>
                             </mask>
                         </variation>
                     </view>
