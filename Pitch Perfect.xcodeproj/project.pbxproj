@@ -109,15 +109,15 @@
 		8C2A2AF61C3A564E00C8D57B /* Pitch Perfect */ = {
 			isa = PBXGroup;
 			children = (
-				8C1FD2471C3B95430042F0A5 /* movie_quote.mp3 */,
 				8C2A2AF71C3A564E00C8D57B /* AppDelegate.swift */,
-				8C2A2AF91C3A564E00C8D57B /* RecordSoundsViewController.swift */,
-				8C2A2AFB1C3A564E00C8D57B /* Main.storyboard */,
 				8C2A2AFE1C3A564E00C8D57B /* Assets.xcassets */,
-				8C2A2B001C3A564E00C8D57B /* LaunchScreen.storyboard */,
 				8C2A2B031C3A564E00C8D57B /* Info.plist */,
+				8C2A2B001C3A564E00C8D57B /* LaunchScreen.storyboard */,
+				8C2A2AFB1C3A564E00C8D57B /* Main.storyboard */,
+				8C1FD2471C3B95430042F0A5 /* movie_quote.mp3 */,
 				8C1FD2431C3B8F2F0042F0A5 /* PlaySoundsViewController.swift */,
 				8C1FD24B1C3BBA410042F0A5 /* RecordedAudio.swift */,
+				8C2A2AF91C3A564E00C8D57B /* RecordSoundsViewController.swift */,
 			);
 			path = "Pitch Perfect";
 			sourceTree = "<group>";
