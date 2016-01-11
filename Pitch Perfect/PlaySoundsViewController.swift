@@ -37,22 +37,22 @@ class PlaySoundsViewController: UIViewController/*, AVAudioPlayerDelegate*/ {
     
 
     @IBAction func playSlowAudio(sender: UIButton) {
-        playStop()
+        playbackStop()
         playAudio(0.5)
     }
     
     @IBAction func playFastAudio(sender: UIButton) {
-        playStop()
+        playbackStop()
         playAudio(1.5)
     }
     
     @IBAction func playChipmunk(sender: UIButton) {
-        playStop()
+        playbackStop()
         playAudioWithVariablePitch(1000)
     }
     
     @IBAction func playDarthVader(sender: UIButton) {
-        playStop()
+        playbackStop()
         playAudioWithVariablePitch(-1000)
     }
     
@@ -64,7 +64,11 @@ class PlaySoundsViewController: UIViewController/*, AVAudioPlayerDelegate*/ {
         
     }
     
-    func playStop() {
+    @IBAction func playStop(sender: UIButton) {
+        playbackStop()
+    }
+    
+    func playbackStop() {
         audioPlayer.stop()
         audioEngine.stop()
         audioEngine.reset()
