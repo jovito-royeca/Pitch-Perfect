@@ -9,48 +9,57 @@
 import UIKit
 import AVFoundation
 
-class PlaySoundsViewController: UIViewController/*, AVAudioPlayerDelegate*/ {
+class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     var audioPlayer:AVAudioPlayer!
+    var audioUpdater:CADisplayLink!
+    
     var echoPlayer:AVAudioPlayer!
-    var reverbPlayers:[AVAudioPlayer] = []
     var audioEngine:AVAudioEngine!
     var audioFile:AVAudioFile!
     var receivedAudio:RecordedAudio!
-    let N:Int = 10 // number of reverb players
+    var activeButton:UIButton?
     
+//MARK: UI elements
     @IBOutlet weak var slowButton: UIButton!
     @IBOutlet weak var fastButton: UIButton!
     @IBOutlet weak var chipmunkButton: UIButton!
     @IBOutlet weak var darthVaderButton: UIButton!
+    @IBOutlet weak var echoButton: UIButton!
+    @IBOutlet weak var reverbButton: UIButton!
+    @IBOutlet weak var timelineSlider: UISlider!
+    @IBOutlet weak var startLabel: UILabel!
+    @IBOutlet weak var endLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         try! audioPlayer = AVAudioPlayer(contentsOfURL: receivedAudio.filePathUrl)
+        audioPlayer.delegate = self
+        
         try! echoPlayer = AVAudioPlayer(contentsOfURL: receivedAudio.filePathUrl)
-        for _ in 0...N {
-            var temp:AVAudioPlayer
-            try! temp = AVAudioPlayer(contentsOfURL: receivedAudio.filePathUrl)
-            reverbPlayers.append(temp)
-        }
-//        audioPlayer.delegate = self
+        echoPlayer.delegate = self
         
         audioEngine = AVAudioEngine()
         try! audioFile = AVAudioFile(forReading: receivedAudio.filePathUrl)
     }
 
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        resetPlaybackControls(audioPlayer.duration)
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
 
+//MARK: button actions
     @IBAction func playSlowAudio(sender: UIButton) {
-        playAudio(0.5)
+        playAudioWithRate(0.5)
     }
     
     @IBAction func playFastAudio(sender: UIButton) {
-        playAudio(1.5)
+        playAudioWithRate(1.5)
     }
     
     @IBAction func playChipmunk(sender: UIButton) {
@@ -62,36 +71,93 @@ class PlaySoundsViewController: UIViewController/*, AVAudioPlayerDelegate*/ {
     }
     
     @IBAction func playEcho(sender: UIButton) {
-        playEcho()
+        playAudioWithEcho()
     }
     
     @IBAction func playReverb(sender: UIButton) {
-        playReverb()
+        let alert = UIAlertController(title: "Reverb Presets", message: nil, preferredStyle: .ActionSheet)
+
+        // add actions
+        alert.addAction(UIAlertAction(title: "Small Room",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.SmallRoom)
+        }))
+        alert.addAction(UIAlertAction(title: "Medium Room",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.MediumRoom)
+        }))
+        alert.addAction(UIAlertAction(title: "Large Room",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.LargeRoom)
+        }))
+        alert.addAction(UIAlertAction(title: "Large Room 2",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.LargeRoom2)
+        }))
+        alert.addAction(UIAlertAction(title: "Medium Hall",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.MediumHall)
+        }))
+        alert.addAction(UIAlertAction(title: "Medium Hall 2",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.MediumHall2)
+        }))
+        alert.addAction(UIAlertAction(title: "Medium Hall 3",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.MediumHall3)
+        }))
+        alert.addAction(UIAlertAction(title: "Large Hall",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.LargeHall)
+        }))
+        alert.addAction(UIAlertAction(title: "Large Hall 2",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.LargeHall2)
+        }))
+        alert.addAction(UIAlertAction(title: "Plate",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.Plate)
+        }))
+        alert.addAction(UIAlertAction(title: "Medium Chamber",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.MediumChamber)
+        }))
+        alert.addAction(UIAlertAction(title: "Large Chamber",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.LargeChamber)
+        }))
+        alert.addAction(UIAlertAction(title: "Cathedral",
+            style: UIAlertActionStyle.Default,
+            handler: {(alert: UIAlertAction!) in
+                self.playAudioWithReverbPreset(.Cathedral)
+        }))
+        
+        //Present the AlertController
+        self.presentViewController(alert, animated: true, completion: nil)
     }
     
     @IBAction func playStop(sender: UIButton) {
         playbackStop()
     }
     
-    func playbackStop() {
-        audioPlayer.stop()
-        audioPlayer.currentTime = 0.0
-        
-        echoPlayer.stop()
-        echoPlayer.currentTime = 0.0
-        
-        for i in 0...N {
-            let player:AVAudioPlayer = reverbPlayers[i]
-            player.stop()
-            player.currentTime = 0.0
-        }
-        
-        audioEngine.stop()
-        audioEngine.reset()
-    }
-    
-    func playAudio(rate: Float) {
+    func playAudioWithRate(rate: Float) {
         playbackStop()
+        
+        audioUpdater = CADisplayLink(target: self, selector: Selector("trackAudio"))
+        audioUpdater.frameInterval = 1
+        audioUpdater.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSRunLoopCommonModes)
         
         audioPlayer.rate = rate
         audioPlayer.play()
@@ -110,14 +176,17 @@ class PlaySoundsViewController: UIViewController/*, AVAudioPlayerDelegate*/ {
         audioEngine.connect(audioPlayerNode, to: changePitchEffect, format: nil)
         audioEngine.connect(changePitchEffect, to: audioEngine.outputNode, format: nil)
         
-        audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: nil)
+        audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: completionHandler)
         
         try! audioEngine.start()
         
         audioPlayerNode.play()
     }
     
-    func playEcho() {
+    /*
+     * Code taken from http://sandmemory.blogspot.com/2014/12/how-would-you-add-reverbecho-to-audio.html
+     */
+    func playAudioWithEcho() {
         playbackStop()
         
         audioPlayer.play()
@@ -129,29 +198,76 @@ class PlaySoundsViewController: UIViewController/*, AVAudioPlayerDelegate*/ {
         echoPlayer.playAtTime(playtime)
     }
     
-    func playReverb() {
+    func playAudioWithReverbPreset(preset: AVAudioUnitReverbPreset) {
         playbackStop()
         
-//        20ms produces detectable delays
-        let delay:NSTimeInterval = 0.02
-        for i in 0...N {
-            let curDelay:NSTimeInterval = delay*NSTimeInterval(i)
-            let player:AVAudioPlayer = reverbPlayers[i]
-            //M_E is e=2.718...
-            //dividing N by 2 made it sound ok for the case N=10
-            let exponent:Double = -Double(i)/Double(N/2)
-            let volume = Float(pow(Double(M_E), exponent))
-            player.volume = volume
-            player.playAtTime(player.deviceCurrentTime + curDelay)
+        let audioPlayerNode = AVAudioPlayerNode()
+        audioEngine.attachNode(audioPlayerNode)
+        
+        let unitReverb = AVAudioUnitReverb()
+        unitReverb.loadFactoryPreset(preset)
+        unitReverb.wetDryMix = 50.0
+        audioEngine.attachNode(unitReverb)
+        
+        audioEngine.connect(audioPlayerNode, to: unitReverb, format: nil)
+        audioEngine.connect(unitReverb, to: audioEngine.outputNode, format: nil)
+        
+        audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: nil)
+        
+        try! audioEngine.start()
+        
+        audioPlayerNode.play()
+    }
+    
+    func playbackStop() {
+        audioPlayer.stop()
+        audioPlayer.currentTime = 0.0
+        if (audioUpdater != nil) {
+            audioUpdater.invalidate()
+        }
+        
+        echoPlayer.stop()
+        echoPlayer.currentTime = 0.0
+        
+        audioEngine.stop()
+        audioEngine.reset()
+    }
+    
+//MARK: AVAudioPlayerDelegate
+    func audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully flag: Bool) {
+        playbackStop()
+    }
+
+//MARK: AudioPlayerNode completion handler
+    func completionHandler() -> Void {
+        playbackStop()
+    }
+
+//MARK: player controls
+    func resetPlaybackControls(duration: NSTimeInterval) {
+        timelineSlider.value = 0.0
+        startLabel.text = stringFromTimeInterval(0.0)
+        endLabel.text = stringFromTimeInterval(duration)
+    }
+    
+    func trackAudio() {
+        let normalizedTime = Float(audioPlayer.currentTime * 100.0 / audioPlayer.duration)
+        timelineSlider.value = normalizedTime
+//        startLabel.text = stringFromTimeInterval(audioPlayer.currentTime * 100.0 / audioPlayer.duration)
+//        endLabel.text = stringFromTimeInterval(audioPlayer.currentTime * 100.0 / audioPlayer.duration)
+    }
+
+//MARL: Uitlity methods
+    func stringFromTimeInterval(interval:NSTimeInterval) -> String {
+        let ti = NSInteger(interval)
+        let seconds = ti % 60
+        let minutes = (ti / 60) % 60
+        let hours   = (ti / 3600)
+        
+        if (hours > 1) {
+            return String(format: "%0.2d:%0.2d:%0.2d",hours,minutes,seconds)
+        } else {
+            return String(format: "%0.2d:%0.2d",minutes,seconds)
         }
     }
-    
-    /*
-    func audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully flag: Bool) {
-        playStop()
-    }
-    
-    func completionHandler() -> Void {
-        playStop()
-    }*/
 }
