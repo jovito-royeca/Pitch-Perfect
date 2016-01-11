@@ -9,17 +9,22 @@
 import UIKit
 import AVFoundation
 
-class PlaySoundsViewController: UIViewController {
+class PlaySoundsViewController: UIViewController/*, AVAudioPlayerDelegate*/ {
     var audioPlayer:AVAudioPlayer!
     var audioEngine:AVAudioEngine!
     var audioFile:AVAudioFile!
     var receivedAudio:RecordedAudio!
     
+    @IBOutlet weak var slowButton: UIButton!
+    @IBOutlet weak var fastButton: UIButton!
+    @IBOutlet weak var chipmunkButton: UIButton!
+    @IBOutlet weak var darthVaderButton: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
         try! audioPlayer = AVAudioPlayer(contentsOfURL: receivedAudio.filePathUrl)
+//        audioPlayer.delegate = self
         
         audioEngine = AVAudioEngine()
         try! audioFile = AVAudioFile(forReading: receivedAudio.filePathUrl)
@@ -32,22 +37,34 @@ class PlaySoundsViewController: UIViewController {
     
 
     @IBAction func playSlowAudio(sender: UIButton) {
+        playStop()
         playAudio(0.5)
     }
     
     @IBAction func playFastAudio(sender: UIButton) {
+        playStop()
         playAudio(1.5)
     }
     
     @IBAction func playChipmunk(sender: UIButton) {
+        playStop()
         playAudioWithVariablePitch(1000)
     }
     
     @IBAction func playDarthVader(sender: UIButton) {
+        playStop()
         playAudioWithVariablePitch(-1000)
     }
     
-    @IBAction func playStop(sender: UIButton) {
+    @IBAction func playEcho(sender: UIButton) {
+        
+    }
+    
+    @IBAction func playReverb(sender: UIButton) {
+        
+    }
+    
+    func playStop() {
         audioPlayer.stop()
         audioEngine.stop()
         audioEngine.reset()
@@ -57,6 +74,7 @@ class PlaySoundsViewController: UIViewController {
         audioEngine.stop()
         audioEngine.reset()
         audioPlayer.stop()
+        
         audioPlayer.rate = rate
         audioPlayer.currentTime = 0.0
         audioPlayer.play()
@@ -83,4 +101,12 @@ class PlaySoundsViewController: UIViewController {
         
         audioPlayerNode.play()
     }
+    /*
+    func audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully flag: Bool) {
+        playStop()
+    }
+    
+    func completionHandler() -> Void {
+        playStop()
+    }*/
 }
