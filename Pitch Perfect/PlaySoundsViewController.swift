@@ -149,11 +149,22 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     }
     
     @IBAction func playStop(sender: UIButton) {
-        playbackStop()
+        playbackStop(true)
+    }
+    
+//MARK: time slider
+    @IBAction func timeSliderChanged(sender: UISlider) {
+        if (audioPlayer.playing) {
+            audioPlayer.pause()
+        }
+        
+        let currentTime = (Double(timelineSlider.value) * audioPlayer.duration) / 100
+        audioPlayer.currentTime = currentTime
+        trackAudio()
     }
     
     func playAudioWithRate(rate: Float) {
-        playbackStop()
+        playbackStop(false)
         
         audioUpdater = CADisplayLink(target: self, selector: Selector("trackAudio"))
         audioUpdater.frameInterval = 1
@@ -164,7 +175,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     }
     
     func playAudioWithVariablePitch(pitch: Float) {
-        playbackStop()
+        playbackStop(false)
         
         let audioPlayerNode = AVAudioPlayerNode()
         audioEngine.attachNode(audioPlayerNode)
@@ -187,7 +198,11 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
      * Code taken from http://sandmemory.blogspot.com/2014/12/how-would-you-add-reverbecho-to-audio.html
      */
     func playAudioWithEcho() {
-        playbackStop()
+        playbackStop(false)
+        
+        audioUpdater = CADisplayLink(target: self, selector: Selector("trackAudio"))
+        audioUpdater.frameInterval = 1
+        audioUpdater.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSRunLoopCommonModes)
         
         audioPlayer.play()
         
@@ -199,7 +214,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     }
     
     func playAudioWithReverbPreset(preset: AVAudioUnitReverbPreset) {
-        playbackStop()
+        playbackStop(false)
         
         let audioPlayerNode = AVAudioPlayerNode()
         audioEngine.attachNode(audioPlayerNode)
@@ -212,35 +227,42 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         audioEngine.connect(audioPlayerNode, to: unitReverb, format: nil)
         audioEngine.connect(unitReverb, to: audioEngine.outputNode, format: nil)
         
-        audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: nil)
+        audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: completionHandler)
         
         try! audioEngine.start()
         
         audioPlayerNode.play()
     }
     
-    func playbackStop() {
+    func playbackStop(reset: Bool) {
         audioPlayer.stop()
-        audioPlayer.currentTime = 0.0
+        if (reset) {
+            audioPlayer.currentTime = 0.0
+        }
+        
         if (audioUpdater != nil) {
             audioUpdater.invalidate()
         }
         
         echoPlayer.stop()
-        echoPlayer.currentTime = 0.0
+        if (reset) {
+            echoPlayer.currentTime = 0.0
+        }
         
         audioEngine.stop()
         audioEngine.reset()
+        
+        resetPlaybackControls(audioPlayer.duration)
     }
     
 //MARK: AVAudioPlayerDelegate
     func audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully flag: Bool) {
-        playbackStop()
+        playbackStop(true)
     }
 
 //MARK: AudioPlayerNode completion handler
     func completionHandler() -> Void {
-        playbackStop()
+        playbackStop(true)
     }
 
 //MARK: player controls
@@ -252,12 +274,15 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     
     func trackAudio() {
         let normalizedTime = Float(audioPlayer.currentTime * 100.0 / audioPlayer.duration)
-        timelineSlider.value = normalizedTime
-//        startLabel.text = stringFromTimeInterval(audioPlayer.currentTime * 100.0 / audioPlayer.duration)
-//        endLabel.text = stringFromTimeInterval(audioPlayer.currentTime * 100.0 / audioPlayer.duration)
+        let startText = stringFromTimeInterval(audioPlayer.currentTime)
+        let endText = stringFromTimeInterval(audioPlayer.duration-audioPlayer.currentTime)
+        
+        self.timelineSlider.value = normalizedTime
+        self.startLabel.text = startText
+        self.endLabel.text = endText
     }
 
-//MARL: Uitlity methods
+//MARK: Utility methods
     func stringFromTimeInterval(interval:NSTimeInterval) -> String {
         let ti = NSInteger(interval)
         let seconds = ti % 60
