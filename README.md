@@ -15,11 +15,11 @@ Udacity project: records voice and plays it back. Can add the following effects 
 * Reverb
 
 ## Screenshots
-<img src="IMG_2058.PNG" alt="Play Screen showing the effects buttons and playback timeline." height="50%"/>
-<img src="IMG_2059.PNG" alt="Record Screen showing the microphone button." height="50%"/>
+<img src="screenshots/IMG_2058.PNG" alt="Play Screen showing the effects buttons and playback timeline." height="50%"/>
+<img src="screenshots/IMG_2059.PNG" alt="Record Screen showing the microphone button." height="50%"/>
 <p/>
-<img src="IMG_2060.PNG" alt="Record Screen recording..." height="50%"/>
-<img src="IMG_2057.PNG" alt="Record Screen paused." height="50%"/>
+<img src="screenshots/IMG_2060.PNG" alt="Record Screen recording..." height="50%"/>
+<img src="screenshots/IMG_2057.PNG" alt="Record Screen paused." height="50%"/>
 
 ## Author
 Jovito Royeca, http://jovitoroyeca.com
