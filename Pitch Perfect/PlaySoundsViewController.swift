@@ -20,6 +20,9 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     var activeButton:UIButton?
     var pauseButtonImage: UIImage!
     var resumeButtonImage: UIImage!
+    var currentTime:NSTimeInterval = 0.0
+    var duration:NSTimeInterval = 0.0
+    var sliderChange:Float = 0.0
     
 //MARK: UI elements
     @IBOutlet weak var slowButton: UIButton!
@@ -50,7 +53,8 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
 
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        resetPlaybackControls(audioPlayer.duration)
+        computeDurationAndCurrentTime()
+        resetPlaybackControls()
     }
     
     override func viewWillDisappear(animated: Bool) {
@@ -152,28 +156,13 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         playbackStop()
     }
     
-//MARK: time slider action
-    @IBAction func timeSliderChanged(sender: UISlider) {
-        if (audioPlayer.playing) {
-            audioPlayer.pause()
-        }
-        
-        let currentTime = (Double(timelineSlider.value) * audioPlayer.duration) / 100
-        audioPlayer.currentTime = currentTime
-        echoPlayer.currentTime = currentTime
-        trackAudio()
-    }
-
 //MARK: action implementations
     func playAudioWithRate(rate: Float) {
-        audioUpdater = CADisplayLink(target: self, selector: Selector("trackAudio"))
-        audioUpdater.frameInterval = 1
-        audioUpdater.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSRunLoopCommonModes)
+        setupAudioTracker()
         
         audioPlayer.rate = rate
         audioPlayer.play()
-        
-        activeButton?.setImage(pauseButtonImage, forState: UIControlState.Normal)
+        updateActiveButtonWithImage(pauseButtonImage)
     }
     
     func playAudioWithVariablePitch(pitch: Float, reset: Bool) {
@@ -190,23 +179,19 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             
             audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: completionHandler)
             
-            audioUpdater = CADisplayLink(target: self, selector: Selector("trackAudio"))
-            audioUpdater.frameInterval = 1
-            audioUpdater.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSRunLoopCommonModes)
+            setupAudioTracker()
         }
         
         try! audioEngine.start()
         audioPlayerNode.play()
-        activeButton?.setImage(pauseButtonImage, forState: UIControlState.Normal)
+        updateActiveButtonWithImage(pauseButtonImage)
     }
     
     /*
      * Code taken from http://sandmemory.blogspot.com/2014/12/how-would-you-add-reverbecho-to-audio.html
      */
     func playAudioWithEcho() {
-        audioUpdater = CADisplayLink(target: self, selector: Selector("trackAudio"))
-        audioUpdater.frameInterval = 1
-        audioUpdater.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSRunLoopCommonModes)
+        setupAudioTracker()
         
         audioPlayer.play()
         
@@ -215,7 +200,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         echoPlayer.volume = 0.8;
         echoPlayer.playAtTime(playtime)
         
-        activeButton?.setImage(pauseButtonImage, forState: UIControlState.Normal)
+        updateActiveButtonWithImage(pauseButtonImage)
     }
     
     /*
@@ -238,41 +223,47 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             
             audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: completionHandler)
             
-            audioUpdater = CADisplayLink(target: self, selector: Selector("trackAudio"))
-            audioUpdater.frameInterval = 1
-            audioUpdater.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSRunLoopCommonModes)
+            setupAudioTracker()
         }
         
         try! audioEngine.start()
         audioPlayerNode.play()
-        activeButton?.setImage(pauseButtonImage, forState: UIControlState.Normal)
+        updateActiveButtonWithImage(pauseButtonImage)
     }
     
     func playbackPause() {
         audioPlayer.pause()
         echoPlayer.pause()
         audioEngine.pause()
-        audioPlayerNode.pause()
-        activeButton?.setImage(resumeButtonImage, forState: UIControlState.Normal)
+        if (audioPlayerNode != nil) {
+            audioPlayerNode.pause()
+        }
+        updateActiveButtonWithImage(resumeButtonImage)
     }
     
     func playbackStop() {
-        audioPlayer.stop()
-        audioPlayer.currentTime = 0.0
+        resetPlaybackControls()
         revertButtonImage()
         activeButton = nil
+        
+        if (audioPlayer.playing) {
+            audioPlayer.stop()
+        }
+        audioPlayer.currentTime = 0.0
         
         if (audioUpdater != nil) {
             audioUpdater.invalidate()
         }
         
-        echoPlayer.stop()
+        if (echoPlayer.playing) {
+            echoPlayer.stop()
+        }
         echoPlayer.currentTime = 0.0
         
-        audioEngine.stop()
-        audioEngine.reset()
-        
-        resetPlaybackControls(audioPlayer.duration)
+        if (audioEngine.running) {
+            audioEngine.stop()
+            audioEngine.reset()
+        }
     }
     
 //MARK: AVAudioPlayerDelegate
@@ -286,37 +277,29 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     }
 
 //MARK: player controls
-    func resetPlaybackControls(duration: NSTimeInterval) {
+    func resetPlaybackControls() {
+        // UI updates must be in main thread because audioPlayerNode and audioEngine are being run in backgraound thread
         dispatch_async(dispatch_get_main_queue()) {
             self.timelineSlider.value = 0.0
             self.startLabel.text = self.stringFromTimeInterval(0.0)
-            self.endLabel.text = self.stringFromTimeInterval(duration)
+            self.endLabel.text = self.stringFromTimeInterval(self.duration)
         }
     }
     
+    func setupAudioTracker() {
+        audioUpdater = CADisplayLink(target: self, selector: Selector("trackAudio"))
+        audioUpdater.frameInterval = 1
+        audioUpdater.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSRunLoopCommonModes)
+    }
+    
     func trackAudio() {
-        var currentTime:NSTimeInterval = 0
-        var duration:NSTimeInterval = 0
-        
-        if (activeButton == slowButton ||
-            activeButton == fastButton ||
-            activeButton == echoButton) {
-            currentTime = audioPlayer.currentTime
-            duration = audioPlayer.duration
-        } else if (activeButton == chipmunkButton ||
-            activeButton == darthVaderButton ||
-            activeButton == reverbButton) {
-                let nodeTime = audioPlayerNode.lastRenderTime;
-                let playerTime = audioPlayerNode.playerTimeForNodeTime(nodeTime!)
-                let seconds = Double(playerTime!.sampleTime) / Double(playerTime!.sampleRate);
-                currentTime = seconds
-                duration = audioPlayer.duration
-        }
+        computeDurationAndCurrentTime()
         
         let normalizedTime = Float(currentTime * 100.0 / duration)
         let startText = stringFromTimeInterval(currentTime)
         let endText = stringFromTimeInterval(duration-currentTime)
 
+        // UI updates must be in main thread because audioPlayerNode and audioEngine are being run in backgraound thread
         dispatch_async(dispatch_get_main_queue()) {
             self.timelineSlider.value = normalizedTime
             self.startLabel.text = startText
@@ -325,6 +308,26 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     }
 
 //MARK: Utility methods
+    func computeDurationAndCurrentTime() {
+        if (activeButton == nil ||
+            activeButton == slowButton ||
+            activeButton == fastButton ||
+            activeButton == echoButton) {
+                currentTime = audioPlayer.currentTime
+                duration = audioPlayer.duration
+        } else if (activeButton == chipmunkButton ||
+            activeButton == darthVaderButton ||
+            activeButton == reverbButton) {
+                if let nodeTime = audioPlayerNode.lastRenderTime {
+                    if let playerTime = audioPlayerNode.playerTimeForNodeTime(nodeTime) {
+                        let seconds = Double(playerTime.sampleTime) / Double(playerTime.sampleRate);
+                        currentTime = seconds
+                    }
+                }
+                duration = Double(audioFile.length) / audioFile.fileFormat.sampleRate
+        }
+    }
+    
     func stringFromTimeInterval(interval:NSTimeInterval) -> String {
         let ti = NSInteger(interval)
         let seconds = ti % 60
@@ -340,6 +343,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     
     func revertButtonImage() {
         if let button = activeButton {
+            // UI updates must be in main thread because audioPlayerNode and audioEngine are being run in backgraound thread
             dispatch_async(dispatch_get_main_queue()) {
                 if (button == self.slowButton) {
                     button.setImage(UIImage(named: "slowButton"), forState: UIControlState.Normal)
@@ -354,6 +358,15 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
                 } else if (button == self.reverbButton) {
                     button.setImage(UIImage(named: "reverbButton"), forState: UIControlState.Normal)
                 }
+            }
+        }
+    }
+    
+    func updateActiveButtonWithImage(image: UIImage) {
+        if let button = activeButton {
+            // UI updates must be in main thread because audioPlayerNode and audioEngine are being run in backgraound thread
+            dispatch_async(dispatch_get_main_queue()) {
+                button.setImage(image, forState: UIControlState.Normal)
             }
         }
     }
