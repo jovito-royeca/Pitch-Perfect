@@ -22,7 +22,6 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     var resumeButtonImage: UIImage!
     var currentTime:NSTimeInterval = 0.0
     var duration:NSTimeInterval = 0.0
-    var sliderChange:Float = 0.0
     
 //MARK: UI elements
     @IBOutlet weak var slowButton: UIButton!
@@ -47,8 +46,8 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         audioEngine = AVAudioEngine()
         try! audioFile = AVAudioFile(forReading: receivedAudio.filePathUrl)
         
-        pauseButtonImage = UIImage(named: "pauseButton")
-        resumeButtonImage = UIImage(named: "resumeButton")
+        pauseButtonImage = UIImage(named: "pauseButtonBig")
+        resumeButtonImage = UIImage(named: "resumeButtonBig")
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -143,12 +142,12 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             if (audioPlayerNode.playing) {
                 playbackPause()
             } else {
-                playAudioWithReverb(false)
+                playAudioWithReverb(reset: false)
             }
         } else {
             playbackStop()
             activeButton = sender
-            playAudioWithReverb(true)
+            playAudioWithReverb(reset: true)
         }
     }
     
@@ -208,7 +207,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
      * https://developer.apple.com/library/prerelease/ios/documentation/AVFoundation/Reference/AVAudioUnitReverb_Class/index.html
      * instead of via http://sandmemory.blogspot.com/2014/12/how-would-you-add-reverbecho-to-audio.html
      */
-    func playAudioWithReverb(reset: Bool) {
+    func playAudioWithReverb(reset reset: Bool) {
         if (reset) {
             audioPlayerNode = AVAudioPlayerNode()
             audioEngine.attachNode(audioPlayerNode)
