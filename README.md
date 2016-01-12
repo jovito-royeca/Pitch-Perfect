@@ -14,7 +14,8 @@ Udacity project: records voice and plays it back. Can add the following effects 
 
 * Reverb
 
+## Screenshots
 ![](screenshots/IMG_2057.PNG "Play Screen showing the effects buttons and playback timeline.") ![](screenshots/IMG_2042.PNG "Play Screen showing the effects buttons and playback timeline.")
 
-#Author
+## Author
 Jovito Royeca, http://jovitoroyeca.com
