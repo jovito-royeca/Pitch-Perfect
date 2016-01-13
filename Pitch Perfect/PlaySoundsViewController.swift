@@ -10,6 +10,16 @@ import UIKit
 import AVFoundation
 
 class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
+    // constant values for effects
+    let SlowRate        = Float(0.5)
+    let FastRate        = Float(1.5)
+    let ChipmunkPitch   = Float(1000)
+    let DarthVaderPitch = Float(-1000)
+    let EchoDelay       = NSTimeInterval(0.1) //100ms
+    let EchoVolume      = Float(0.8)
+    let ReverbPreset    = AVAudioUnitReverbPreset.LargeChamber // large Chamber is a suitable reverb effect
+    let ReverbWetDryMix = Float(50.0)
+    
     // tracks the playback of audio
     var audioUpdater:CADisplayLink!
     
@@ -22,14 +32,17 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     // the passed-in model class
     var receivedAudio:RecordedAudio!
     
-    // to track the actively playing button
+    // the actively playing button
     var activeButton:UIButton?
+    
+    // if the audio is currently playing
+    var playing = false
     
     // cache the button images
     var pauseButtonImage: UIImage!
     var resumeButtonImage: UIImage!
 
-    // audio properties
+    // audio playback properties
     var currentTime:NSTimeInterval = 0.0
     var duration:NSTimeInterval = 0.0
     
@@ -80,93 +93,55 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
 
 //MARK: button actions
     @IBAction func playSlowAudio(sender: UIButton) {
-        if (activeButton == sender) {
-            if (audioPlayer.playing) {
-                playbackPause()
-            } else {
-                playAudioWithRate(0.5)
-            }
-            
-        } else {
-            playbackStop()
-            activeButton = sender
-            playAudioWithRate(0.5)
+        let effects = {(params: Array<AnyObject>?) in
+            self.playAudioWithRate(self.SlowRate)
         }
+        
+        playEffects(button: sender, effects: effects, fxParams: nil)
     }
     
     @IBAction func playFastAudio(sender: UIButton) {
-        if (activeButton == sender) {
-            if (audioPlayer.playing) {
-                playbackPause()
-            } else {
-                playAudioWithRate(1.5)
-            }
-
-        } else {
-            playbackStop()
-            activeButton = sender
-            playAudioWithRate(1.5)
+        let effects = {(params: Array<AnyObject>?) in
+            self.playAudioWithRate(self.FastRate)
         }
+        
+        playEffects(button: sender, effects: effects, fxParams: nil)
+        
     }
     
     @IBAction func playChipmunk(sender: UIButton) {
-        if (activeButton == sender) {
-            if (audioPlayerNode.playing) {
-                playbackPause()
-            } else {
-                playAudioWithVariablePitch(1000, reset: false)
-            }
-
-        } else {
-            playbackStop()
-            activeButton = sender
-            playAudioWithVariablePitch(1000, reset: true)
+        let effects = {(params: Array<AnyObject>?) in
+            self.playAudioWithVariablePitch(self.ChipmunkPitch, reset: (params?.first?.boolValue)!)
         }
+        let fxParams = [activeButton != sender]
+        
+        playEffects(button: sender, effects: effects, fxParams: fxParams)
     }
     
     @IBAction func playDarthVader(sender: UIButton) {
-        if (activeButton == sender) {
-            if (audioPlayerNode.playing) {
-                playbackPause()
-            } else {
-                playAudioWithVariablePitch(-1000, reset: false)
-            }
-
-        } else {
-            playbackStop()
-            activeButton = sender
-            playAudioWithVariablePitch(-1000, reset: true)
+        let effects = {(params: Array<AnyObject>?) in
+            self.playAudioWithVariablePitch(self.DarthVaderPitch, reset: (params?.first?.boolValue)!)
         }
+        let fxParams = [activeButton != sender]
+        
+        playEffects(button: sender, effects: effects, fxParams: fxParams)
     }
     
     @IBAction func playEcho(sender: UIButton) {
-        if (activeButton == sender) {
-            if (audioPlayer.playing) {
-                playbackPause()
-            } else {
-                playAudioWithEcho()
-            }
-
-        } else {
-            playbackStop()
-            activeButton = sender
-            playAudioWithEcho()
+        let effects = {(params: Array<AnyObject>?) in
+            self.playAudioWithEcho()
         }
+        
+        playEffects(button: sender, effects: effects, fxParams: nil)
     }
     
     @IBAction func playReverb(sender: UIButton) {
-        if (activeButton == sender) {
-            if (audioPlayerNode.playing) {
-                playbackPause()
-            } else {
-                playAudioWithReverb(reset: false)
-            }
-
-        } else {
-            playbackStop()
-            activeButton = sender
-            playAudioWithReverb(reset: true)
+        let effects = {(params: Array<AnyObject>?) in
+            self.playAudioWithReverb(reset: (params?.first?.boolValue)!)
         }
+        let fxParams = [activeButton != sender]
+        
+        playEffects(button: sender, effects: effects, fxParams: fxParams)
     }
     
     @IBAction func playStop(sender: UIButton) {
@@ -204,7 +179,8 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         updateActiveButtonWithImage(pauseButtonImage)
     }
     
-    /*
+    /**
+     * Echo sound effect.
      * Code taken from http://sandmemory.blogspot.com/2014/12/how-would-you-add-reverbecho-to-audio.html
      */
     func playAudioWithEcho() {
@@ -212,16 +188,16 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         
         audioPlayer.play()
         
-        let delay:NSTimeInterval = 0.1//100ms
-        let playtime = echoPlayer.deviceCurrentTime + delay
-        echoPlayer.volume = 0.8;
+        let playtime = echoPlayer.deviceCurrentTime + EchoDelay
+        echoPlayer.volume = EchoVolume
         echoPlayer.playAtTime(playtime)
         
         updateActiveButtonWithImage(pauseButtonImage)
     }
     
-    /*
-     * Our teacher Kunal Chawla suggested to implement reverb via
+    /**
+     * Reverb sound effect.
+     * Our teacher Kunal Chawla suggested to implement this via
      * https://developer.apple.com/library/prerelease/ios/documentation/AVFoundation/Reference/AVAudioUnitReverb_Class/index.html
      * instead of via http://sandmemory.blogspot.com/2014/12/how-would-you-add-reverbecho-to-audio.html
      */
@@ -231,9 +207,8 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             audioEngine.attachNode(audioPlayerNode)
             
             let unitReverb = AVAudioUnitReverb()
-            // AVAudioUnitReverbPreset.LargeChamber is suitable reverb effect
-            unitReverb.loadFactoryPreset(.LargeChamber)
-            unitReverb.wetDryMix = 50.0
+            unitReverb.loadFactoryPreset(ReverbPreset)
+            unitReverb.wetDryMix = ReverbWetDryMix
             audioEngine.attachNode(unitReverb)
             
             audioEngine.connect(audioPlayerNode, to: unitReverb, format: nil)
@@ -263,6 +238,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         resetPlaybackControls()
         revertButtonImage()
         activeButton = nil
+        playing = false
         
         if (audioPlayer.playing) {
             audioPlayer.stop()
@@ -281,6 +257,34 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         if (audioEngine.running) {
             audioEngine.stop()
             audioEngine.reset()
+        }
+    }
+    
+    /**
+     * Plays sound `effect`s with the appropriate `button`.
+     * -parameter button: the sound effect button
+     * -parameter effects: a block that plays the desired sound effect. Can have an optional `params` parameter
+     * -parameter fxParams: An optional array of parameters for the `effects` block
+     */
+    func playEffects(button button: UIButton, effects:(Array<AnyObject>?) -> Void, fxParams: Array<AnyObject>?)  {
+        // lets check if the button is the activeButton
+        // if it is currently playing, pause it. else play the sound effect
+        if (activeButton == button) {
+            if (playing) {
+                playbackPause()
+                playing = false
+            } else {
+                playing = true
+                effects(fxParams)
+            }
+        
+        // if not the activeButton, stop the current playback and set the button as the activeButton
+        // then play the audio with the sound effects
+        } else {
+            playbackStop()
+            activeButton = button
+            playing = true
+            effects(fxParams)
         }
     }
     
@@ -346,8 +350,10 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         }
     }
     
-    /*
-     * Converts NSTimeInterval to human readable format HH:mm:ss
+    /**
+     * Converts NSTimeInterval to human readable format
+     * -parameter interval: the time interval
+     * -returns: String representation of time in human readable format HH:mm:ss
      */
     func stringFromTimeInterval(interval:NSTimeInterval) -> String {
         let ti = NSInteger(interval)
