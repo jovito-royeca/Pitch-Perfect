@@ -10,6 +10,8 @@ import UIKit
 import AVFoundation
 
 class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
+//MARK: variables
+    
     // constant values for effects
     let SlowRate        = Float(0.5)
     let FastRate        = Float(1.5)
@@ -97,7 +99,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             self.playAudioWithRate(self.SlowRate)
         }
         
-        playEffects(button: sender, effects: effects, fxParams: nil)
+        playbackEffects(button: sender, effects: effects, fxParams: nil)
     }
     
     @IBAction func playFastAudio(sender: UIButton) {
@@ -105,26 +107,32 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             self.playAudioWithRate(self.FastRate)
         }
         
-        playEffects(button: sender, effects: effects, fxParams: nil)
+        playbackEffects(button: sender, effects: effects, fxParams: nil)
         
     }
     
     @IBAction func playChipmunk(sender: UIButton) {
         let effects = {(params: Array<AnyObject>?) in
-            self.playAudioWithVariablePitch(self.ChipmunkPitch, reset: (params?.first?.boolValue)!)
+            let pitchEffect = AVAudioUnitTimePitch()
+            pitchEffect.pitch = self.ChipmunkPitch
+            
+            self .playAudioUsingAudioEngineWithNode(pitchEffect, reset: (params?.first?.boolValue)!)
         }
         let fxParams = [activeButton != sender]
         
-        playEffects(button: sender, effects: effects, fxParams: fxParams)
+        playbackEffects(button: sender, effects: effects, fxParams: fxParams)
     }
     
     @IBAction func playDarthVader(sender: UIButton) {
         let effects = {(params: Array<AnyObject>?) in
-            self.playAudioWithVariablePitch(self.DarthVaderPitch, reset: (params?.first?.boolValue)!)
+            let pitchEffect = AVAudioUnitTimePitch()
+            pitchEffect.pitch = self.DarthVaderPitch
+            
+            self .playAudioUsingAudioEngineWithNode(pitchEffect, reset: (params?.first?.boolValue)!)
         }
         let fxParams = [activeButton != sender]
         
-        playEffects(button: sender, effects: effects, fxParams: fxParams)
+        playbackEffects(button: sender, effects: effects, fxParams: fxParams)
     }
     
     @IBAction func playEcho(sender: UIButton) {
@@ -132,16 +140,25 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             self.playAudioWithEcho()
         }
         
-        playEffects(button: sender, effects: effects, fxParams: nil)
+        playbackEffects(button: sender, effects: effects, fxParams: nil)
     }
     
+    /*
+     * Our teacher Kunal Chawla suggested to implement the reverb effect via
+     * https://developer.apple.com/library/prerelease/ios/documentation/AVFoundation/Reference/AVAudioUnitReverb_Class/index.html
+     * instead of via http://sandmemory.blogspot.com/2014/12/how-would-you-add-reverbecho-to-audio.html
+     */
     @IBAction func playReverb(sender: UIButton) {
         let effects = {(params: Array<AnyObject>?) in
-            self.playAudioWithReverb(reset: (params?.first?.boolValue)!)
+            let reverbEffect = AVAudioUnitReverb()
+            reverbEffect.loadFactoryPreset(self.ReverbPreset)
+            reverbEffect.wetDryMix = self.ReverbWetDryMix
+            
+            self .playAudioUsingAudioEngineWithNode(reverbEffect, reset: (params?.first?.boolValue)!)
         }
         let fxParams = [activeButton != sender]
         
-        playEffects(button: sender, effects: effects, fxParams: fxParams)
+        playbackEffects(button: sender, effects: effects, fxParams: fxParams)
     }
     
     @IBAction func playStop(sender: UIButton) {
@@ -154,28 +171,6 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         
         audioPlayer.rate = rate
         audioPlayer.play()
-        updateActiveButtonWithImage(pauseButtonImage)
-    }
-    
-    func playAudioWithVariablePitch(pitch: Float, reset: Bool) {
-        if (reset) {
-            audioPlayerNode = AVAudioPlayerNode()
-            audioEngine.attachNode(audioPlayerNode)
-            
-            let changePitchEffect = AVAudioUnitTimePitch()
-            changePitchEffect.pitch = pitch
-            audioEngine.attachNode(changePitchEffect)
-            
-            audioEngine.connect(audioPlayerNode, to: changePitchEffect, format: nil)
-            audioEngine.connect(changePitchEffect, to: audioEngine.outputNode, format: nil)
-            
-            audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: completionHandler)
-            
-            setupAudioTracker()
-        }
-        
-        try! audioEngine.start()
-        audioPlayerNode.play()
         updateActiveButtonWithImage(pauseButtonImage)
     }
     
@@ -196,23 +191,18 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     }
     
     /**
-     * Reverb sound effect.
-     * Our teacher Kunal Chawla suggested to implement this via
-     * https://developer.apple.com/library/prerelease/ios/documentation/AVFoundation/Reference/AVAudioUnitReverb_Class/index.html
-     * instead of via http://sandmemory.blogspot.com/2014/12/how-would-you-add-reverbecho-to-audio.html
+     * Sound effects using AVAudioEngine
+     * -parameter node: the `AVAudioNode` sound effect
      */
-    func playAudioWithReverb(reset reset: Bool) {
+    func playAudioUsingAudioEngineWithNode(node: AVAudioNode, reset: Bool) {
         if (reset) {
             audioPlayerNode = AVAudioPlayerNode()
             audioEngine.attachNode(audioPlayerNode)
             
-            let unitReverb = AVAudioUnitReverb()
-            unitReverb.loadFactoryPreset(ReverbPreset)
-            unitReverb.wetDryMix = ReverbWetDryMix
-            audioEngine.attachNode(unitReverb)
+            audioEngine.attachNode(node)
             
-            audioEngine.connect(audioPlayerNode, to: unitReverb, format: nil)
-            audioEngine.connect(unitReverb, to: audioEngine.outputNode, format: nil)
+            audioEngine.connect(audioPlayerNode, to: node, format: nil)
+            audioEngine.connect(node, to: audioEngine.outputNode, format: nil)
             
             audioPlayerNode.scheduleFile(audioFile, atTime: nil, completionHandler: completionHandler)
             
@@ -223,7 +213,8 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         audioPlayerNode.play()
         updateActiveButtonWithImage(pauseButtonImage)
     }
-    
+
+//MARK: playback actions
     func playbackPause() {
         audioPlayer.pause()
         echoPlayer.pause()
@@ -266,7 +257,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
      * -parameter effects: a block that plays the desired sound effect. Can have an optional `params` parameter
      * -parameter fxParams: An optional array of parameters for the `effects` block
      */
-    func playEffects(button button: UIButton, effects:(Array<AnyObject>?) -> Void, fxParams: Array<AnyObject>?)  {
+    func playbackEffects(button button: UIButton, effects:(Array<AnyObject>?) -> Void, fxParams: Array<AnyObject>?)  {
         // lets check if the button is the activeButton
         // if it is currently playing, pause it. else play the sound effect
         if (activeButton == button) {
