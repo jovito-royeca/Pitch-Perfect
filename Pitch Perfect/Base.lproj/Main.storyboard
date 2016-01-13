@@ -64,10 +64,10 @@
                                 <exclude reference="2cM-Uu-0gP"/>
                             </mask>
                             <mask key="constraints">
-                                <exclude reference="CzC-nc-vVF"/>
-                                <exclude reference="dxq-ck-oDB"/>
                                 <exclude reference="csD-oa-jwc"/>
                                 <exclude reference="P7a-IB-KWg"/>
+                                <exclude reference="CzC-nc-vVF"/>
+                                <exclude reference="dxq-ck-oDB"/>
                                 <exclude reference="Ley-8C-362"/>
                                 <exclude reference="fdp-h1-Xkz"/>
                             </mask>
