@@ -30,9 +30,6 @@
                                 <rect key="frame" x="-42" y="-21" width="42" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="highlightedColor"/>
-                                <variation key="widthClass=compact" misplaced="YES">
-                                    <rect key="frame" x="110" y="358" width="180" height="21"/>
-                                </variation>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IzZ-fg-N3X">
                                 <rect key="frame" x="-23" y="-15" width="46" height="30"/>
@@ -69,9 +66,9 @@
                             <mask key="constraints">
                                 <exclude reference="2Hy-n2-5i4"/>
                                 <exclude reference="nUn-Nh-AOB"/>
+                                <exclude reference="eBJ-zU-B7R"/>
                                 <exclude reference="CzC-nc-vVF"/>
                                 <exclude reference="dxq-ck-oDB"/>
-                                <exclude reference="eBJ-zU-B7R"/>
                                 <exclude reference="mqP-DX-4hC"/>
                             </mask>
                         </variation>
@@ -84,9 +81,9 @@
                             <mask key="constraints">
                                 <include reference="2Hy-n2-5i4"/>
                                 <include reference="nUn-Nh-AOB"/>
+                                <include reference="eBJ-zU-B7R"/>
                                 <include reference="CzC-nc-vVF"/>
                                 <include reference="dxq-ck-oDB"/>
-                                <include reference="eBJ-zU-B7R"/>
                                 <include reference="mqP-DX-4hC"/>
                             </mask>
                         </variation>
