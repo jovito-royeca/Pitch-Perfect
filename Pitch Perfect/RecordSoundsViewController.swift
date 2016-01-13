@@ -19,17 +19,23 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
     var audioRecorder:AVAudioRecorder!
     var recordedAudio:RecordedAudio!
     
+    // cache the button images
+    var pauseButtonImage: UIImage!
+    var resumeButtonImage: UIImage!
+
+//MARK: overridden inherited methods
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        
+        pauseButtonImage = UIImage(named: "pauseButton")
+        resumeButtonImage = UIImage(named: "resumeButton")
     }
 
     override func viewWillAppear(animated: Bool) {
         recordButton.enabled = true
         statusLabel.text = "Tap Mic to Record"
         pauseButton.hidden = true
-        pauseButton.setImage(UIImage(named: "pauseButton"), forState: UIControlState.Normal)
+        pauseButton.setImage(pauseButtonImage, forState: UIControlState.Normal)
         stopButton.hidden = true
     }
     
@@ -38,6 +44,7 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
         // Dispose of any resources that can be recreated.
     }
 
+//MARK: button actions
     @IBAction func recordAudio(sender: UIButton) {
         recordButton.enabled = false
         statusLabel.text = "Recording..."
@@ -73,14 +80,15 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
         if (audioRecorder.recording) {
             audioRecorder.pause()
             statusLabel.text = "Paused"
-            pauseButton.setImage(UIImage(named: "resumeButton"), forState: UIControlState.Normal)
+            pauseButton.setImage(resumeButtonImage, forState: UIControlState.Normal)
         } else {
             audioRecorder.record()
             statusLabel.text = "Recording..."
-            pauseButton.setImage(UIImage(named: "pauseButton"), forState: UIControlState.Normal)
+            pauseButton.setImage(pauseButtonImage, forState: UIControlState.Normal)
         }
     }
     
+//MARK: intercepting the segueing to the next scene
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if (segue.identifier == "stopRecording") {
             let playSoundsVC:PlaySoundsViewController = segue.destinationViewController as! PlaySoundsViewController
@@ -89,7 +97,8 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
             playSoundsVC.navigationItem.title = "Play"
         }
     }
-    
+
+//MARK: AVAudioRecorderDelegate
     func audioRecorderDidFinishRecording(recorder: AVAudioRecorder, successfully flag: Bool) {
         if (flag) {
             let filePathUrl = recorder.url
@@ -101,4 +110,3 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
         }
     }
 }
-

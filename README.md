@@ -14,6 +14,8 @@ Udacity project: records voice and plays it back. Can add the following effects 
 
 * Reverb
 
+User can pause and resume playback of the recorded audio. A time slider of playback is also added.
+
 ## Screenshots
 <img src="screenshots/IMG_2058.PNG" alt="Record Screen showing the microphone button." width="30%" height="auto"/>
 <img src="screenshots/IMG_2065.PNG" alt="Record Screen recording..." width="30%" height="auto"/>

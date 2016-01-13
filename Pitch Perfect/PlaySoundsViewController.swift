@@ -10,16 +10,26 @@ import UIKit
 import AVFoundation
 
 class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
-    var audioPlayer:AVAudioPlayer!
+    // tracks the playback of audio
     var audioUpdater:CADisplayLink!
+    
+    var audioPlayer:AVAudioPlayer!
     var echoPlayer:AVAudioPlayer!
     var audioPlayerNode:AVAudioPlayerNode!
     var audioEngine:AVAudioEngine!
     var audioFile:AVAudioFile!
+    
+    // the passed-in model class
     var receivedAudio:RecordedAudio!
+    
+    // to track the actively playing button
     var activeButton:UIButton?
+    
+    // cache the button images
     var pauseButtonImage: UIImage!
     var resumeButtonImage: UIImage!
+
+    // audio properties
     var currentTime:NSTimeInterval = 0.0
     var duration:NSTimeInterval = 0.0
     
@@ -33,7 +43,8 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     @IBOutlet weak var timelineSlider: UISlider!
     @IBOutlet weak var startLabel: UILabel!
     @IBOutlet weak var endLabel: UILabel!
-    
+
+//MARK: overridden inherited methods
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -57,6 +68,8 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
     }
     
     override func viewWillDisappear(animated: Bool) {
+        // user may return to Record scene before playback is finished,
+        // so we must stop the playback
         playbackStop()
     }
 
@@ -88,6 +101,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             } else {
                 playAudioWithRate(1.5)
             }
+
         } else {
             playbackStop()
             activeButton = sender
@@ -102,6 +116,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             } else {
                 playAudioWithVariablePitch(1000, reset: false)
             }
+
         } else {
             playbackStop()
             activeButton = sender
@@ -116,6 +131,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             } else {
                 playAudioWithVariablePitch(-1000, reset: false)
             }
+
         } else {
             playbackStop()
             activeButton = sender
@@ -130,6 +146,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             } else {
                 playAudioWithEcho()
             }
+
         } else {
             playbackStop()
             activeButton = sender
@@ -144,6 +161,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             } else {
                 playAudioWithReverb(reset: false)
             }
+
         } else {
             playbackStop()
             activeButton = sender
@@ -213,6 +231,7 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
             audioEngine.attachNode(audioPlayerNode)
             
             let unitReverb = AVAudioUnitReverb()
+            // AVAudioUnitReverbPreset.LargeChamber is suitable reverb effect
             unitReverb.loadFactoryPreset(.LargeChamber)
             unitReverb.wetDryMix = 50.0
             audioEngine.attachNode(unitReverb)
@@ -234,8 +253,8 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         audioPlayer.pause()
         echoPlayer.pause()
         audioEngine.pause()
-        if (audioPlayerNode != nil) {
-            audioPlayerNode.pause()
+        if let node = audioPlayerNode {
+            node.pause()
         }
         updateActiveButtonWithImage(resumeButtonImage)
     }
@@ -250,8 +269,8 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         }
         audioPlayer.currentTime = 0.0
         
-        if (audioUpdater != nil) {
-            audioUpdater.invalidate()
+        if let updater = audioUpdater {
+            updater.invalidate()
         }
         
         if (echoPlayer.playing) {
@@ -327,6 +346,9 @@ class PlaySoundsViewController: UIViewController, AVAudioPlayerDelegate {
         }
     }
     
+    /*
+     * Converts NSTimeInterval to human readable format HH:mm:ss
+     */
     func stringFromTimeInterval(interval:NSTimeInterval) -> String {
         let ti = NSInteger(interval)
         let seconds = ti % 60
