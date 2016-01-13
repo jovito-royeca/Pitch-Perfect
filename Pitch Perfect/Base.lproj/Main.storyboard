@@ -48,12 +48,12 @@
                         </subviews>
                         <color key="backgroundColor" red="0.2901960784" green="0.6705882353" blue="0.96862745100000003" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
-                            <constraint firstItem="2cM-Uu-0gP" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="2Hy-n2-5i4"/>
                             <constraint firstItem="LyX-pM-sxD" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="CzC-nc-vVF"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="2cM-Uu-0gP" secondAttribute="bottom" constant="100" id="Ley-8C-362"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="IzZ-fg-N3X" secondAttribute="trailing" constant="80" id="P7a-IB-KWg"/>
+                            <constraint firstItem="2cM-Uu-0gP" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="80" id="csD-oa-jwc"/>
                             <constraint firstItem="LyX-pM-sxD" firstAttribute="top" secondItem="twB-bZ-rSA" secondAttribute="bottom" constant="8" id="dxq-ck-oDB"/>
-                            <constraint firstItem="IzZ-fg-N3X" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="eBJ-zU-B7R"/>
-                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="IzZ-fg-N3X" secondAttribute="bottom" constant="70" id="mqP-DX-4hC"/>
-                            <constraint firstItem="2cM-Uu-0gP" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="nUn-Nh-AOB"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="IzZ-fg-N3X" secondAttribute="bottom" constant="100" id="fdp-h1-Xkz"/>
                             <constraint firstItem="twB-bZ-rSA" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="pvx-jE-kV7"/>
                             <constraint firstItem="twB-bZ-rSA" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="wIz-na-Lic"/>
                         </constraints>
@@ -64,12 +64,12 @@
                                 <exclude reference="2cM-Uu-0gP"/>
                             </mask>
                             <mask key="constraints">
-                                <exclude reference="2Hy-n2-5i4"/>
-                                <exclude reference="nUn-Nh-AOB"/>
-                                <exclude reference="eBJ-zU-B7R"/>
                                 <exclude reference="CzC-nc-vVF"/>
                                 <exclude reference="dxq-ck-oDB"/>
-                                <exclude reference="mqP-DX-4hC"/>
+                                <exclude reference="csD-oa-jwc"/>
+                                <exclude reference="P7a-IB-KWg"/>
+                                <exclude reference="Ley-8C-362"/>
+                                <exclude reference="fdp-h1-Xkz"/>
                             </mask>
                         </variation>
                         <variation key="widthClass=compact">
@@ -79,12 +79,16 @@
                                 <include reference="2cM-Uu-0gP"/>
                             </mask>
                             <mask key="constraints">
-                                <include reference="2Hy-n2-5i4"/>
-                                <include reference="nUn-Nh-AOB"/>
-                                <include reference="eBJ-zU-B7R"/>
                                 <include reference="CzC-nc-vVF"/>
                                 <include reference="dxq-ck-oDB"/>
-                                <include reference="mqP-DX-4hC"/>
+                            </mask>
+                        </variation>
+                        <variation key="heightClass=regular-widthClass=compact">
+                            <mask key="constraints">
+                                <include reference="csD-oa-jwc"/>
+                                <include reference="P7a-IB-KWg"/>
+                                <include reference="Ley-8C-362"/>
+                                <include reference="fdp-h1-Xkz"/>
                             </mask>
                         </variation>
                     </view>
